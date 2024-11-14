@@ -1,12 +1,28 @@
 import requests
 from flask import Flask, jsonify, request
 import logging
+from logging.handlers import RotatingFileHandler
 
 
 app = Flask(__name__)
 
 # Defina o URL do seu webhook no Bitrix24
 WEBHOOK_URL = "https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yjx5bg/"
+
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+file_handler = RotatingFileHandler('app.log', maxBytes=10000000, backupCount=5)
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.DEBUG)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+console_handler.setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 # Função para buscar a cidade e UF via APIs públicas (ViaCEP, OpenCEP, BrasilAPI)
 def get_city_and_uf(cep):
