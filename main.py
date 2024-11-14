@@ -1,5 +1,7 @@
 import requests
 from flask import Flask, jsonify, request
+import logging
+
 
 app = Flask(__name__)
 
@@ -20,11 +22,11 @@ def get_city_and_uf(cep):
         rua = data.get("logradouro", "")
         bairro = data.get("bairro", "")
         uf = data.get("uf", "")
-        print(f"ViaCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para ViaCEP
+        logging.info(f"ViaCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para ViaCEP
         return cidade, rua, bairro, uf
     
     # Se o ViaCEP falhar, tenta o OpenCEP
-    print(f"ViaCEP falhou ou retornou erro. Tentando o OpenCEP...")  # Log de falha no ViaCEP
+    logging.info(f"ViaCEP falhou ou retornou erro. Tentando o OpenCEP...")  # Log de falha no ViaCEP
     url_opencep = f"https://opencep.com.br/api/cep/{cep}"
     response_opencep = requests.get(url_opencep)
     if response_opencep.status_code == 200:
@@ -33,11 +35,11 @@ def get_city_and_uf(cep):
         rua = data.get("logradouro", "")
         bairro = data.get("bairro", "")
         uf = data.get("uf", "")
-        print(f"OpenCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para OpenCEP
+        logging.info(f"OpenCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para OpenCEP
         return cidade, rua, bairro, uf
 
     # Se o OpenCEP falhar, tenta a BrasilAPI
-    print(f"OpenCEP falhou ou retornou erro. Tentando o BrasilAPI...")  # Log de falha no OpenCEP
+    logging.info(f"OpenCEP falhou ou retornou erro. Tentando o BrasilAPI...")  # Log de falha no OpenCEP
     url_brasilapi = f"https://brasilapi.com.br/api/cep/v2/{cep}"
     response_brasilapi = requests.get(url_brasilapi)
     if response_brasilapi.status_code == 200:
@@ -46,16 +48,16 @@ def get_city_and_uf(cep):
         rua = data.get("street", "")
         bairro = data.get("neighborhood", "")
         uf = data.get("state", "")
-        print(f"BrasilAPI utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para BrasilAPI
+        logging.info(f"BrasilAPI utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para BrasilAPI
         return cidade, rua, bairro, uf
 
     # Se todas as APIs falharem
-    print(f"Erro ao consultar o CEP {cep} nas três APIs.")  # Log de erro
+    logging.info(f"Erro ao consultar o CEP {cep} nas três APIs.")  # Log de erro
     return None, None, None, None
 
 # Função para atualizar os campos no Bitrix24
 def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
-    print(f"Atualizando o Bitrix24 com Cidade: {cidade}, Rua: {rua}, Bairro: {bairro} UF: {uf} para o registro {deal_id}...")  # Log
+    logging.info(f"Atualizando o Bitrix24 com Cidade: {cidade}, Rua: {rua}, Bairro: {bairro} UF: {uf} para o registro {deal_id}...")  # Log
     # O endpoint correto para atualizar um "deal" no Bitrix24 é o "crm.deal.update"
     url = f"{WEBHOOK_URL}crm.deal.update.json"
 
@@ -74,14 +76,14 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
     response = requests.post(url, json=payload)
     
     # Log detalhado da resposta da API Bitrix24
-    print(f"Resposta da API Bitrix24: {response.status_code} - {response.text}")  # Log detalhado da resposta
+    logging.info(f"Resposta da API Bitrix24: {response.status_code} - {response.text}")  # Log detalhado da resposta
 
     if response.status_code == 200:
         # Confirmando a atualização
-        print(f"Registro {deal_id} atualizado com sucesso!")
+        logging.info(f"Registro {deal_id} atualizado com sucesso!")
     else:
         # Caso contrário, log de erro detalhado
-        print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
+        logging.info(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
 
 # Endpoint da API para atualizar cidade e UF a partir de um CEP
 @app.route('/atualizar_cidade_uf/<int:deal_id>/<string:cep>', methods=['POST'])
@@ -89,7 +91,7 @@ def atualizar_cidade_uf(deal_id, cep):
     try:
         # Verifica se ambos os parâmetros foram fornecidos
         if not deal_id or not cep:
-            print(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
+            logging.info(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
         # Passo 1: Consultar a cidade e UF pelo CEP
