@@ -76,5 +76,5 @@ def main():
     else:
         print("Não foi possível obter o CEP do registro.")
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=7964)
