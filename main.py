@@ -16,11 +16,11 @@ def get_city_and_uf(cep):
     if response.status_code == 200:
         data = response.json()
         cidade = data.get("localidade", "")
-        rua = data.get("lograudouro", "")
+        rua = data.get("logradouro", "")
         bairro = data.get("bairro","")
         uf = data.get("uf", "")
         print(f"Resposta da API ViaCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro} UF: {uf}")  # Log: mostrando a cidade e UF retornados
-        return cidade, uf, bairro, rua,
+        return cidade, uf, bairro, rua
     else:
         print(f"Erro ao consultar o CEP {cep}: {response.status_code}")  # Log de erro
         return None, None
@@ -38,7 +38,7 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
             'UF_CRM_1700661287551': bairro, # Campo Bairro
             'UF_CRM_1698688252221': rua, # Campo Rua
             'UF_CRM_1731588487': cidade,  # Campo Cidade
-            'UF_CRM_1731589190': uf,      # Campo UF
+            'UF_CRM_1731589190': uf   # Campo UF
         }
     }
 
@@ -70,12 +70,12 @@ def atualizar_cidade_uf():
             print(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
-        # Passo 1: Consultar a cidade e UF pelo CEP
-        cidade, bairro, rua, uf = get_city_and_uf(cep)
+        # Passo 1: Consultar a cidade e UF pelo CEP return cidade, uf, bairro, rua
+        cidade,  uf, bairro, rua = get_city_and_uf(cep)
 
         if cidade and uf:
             # Passo 2: Atualizar o registro no Bitrix24 com cidade e UF
-            update_bitrix24_record(deal_id, bairro, rua, cidade,  uf)
+            update_bitrix24_record(deal_id, cidade,  uf, bairro, rua)
             return jsonify({"sucesso": f"Registro {deal_id} atualizado com sucesso!"}), 200
         else:
             print("Erro ao obter cidade e UF para o CEP!")  # Log de erro
