@@ -20,7 +20,7 @@ def get_city_and_uf(cep):
         bairro = data.get("bairro","")
         uf = data.get("uf", "")
         print(f"Resposta da API ViaCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro} UF: {uf}")  # Log: mostrando a cidade e UF retornados
-        return cidade, uf, bairro, rua
+        return cidade, rua, bairro, uf
     else:
         print(f"Erro ao consultar o CEP {cep}: {response.status_code}")  # Log de erro
         return None, None
