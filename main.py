@@ -1,32 +1,21 @@
 import requests
 from flask import Flask, jsonify, request
 import logging
-from logging.handlers import RotatingFileHandler
-
 
 app = Flask(__name__)
 
 # Defina o URL do seu webhook no Bitrix24
 WEBHOOK_URL = "https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yjx5bg/"
 
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-file_handler = RotatingFileHandler('app.log', maxBytes=10000000, backupCount=5)
-file_handler.setFormatter(log_formatter)
-file_handler.setLevel(logging.DEBUG)
-
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(log_formatter)
-console_handler.setLevel(logging.DEBUG)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+# Configuração básica de logging
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO  # Definindo o nível de log para INFO
+)
 
 # Função para buscar a cidade e UF via APIs públicas (ViaCEP, OpenCEP, BrasilAPI)
 def get_city_and_uf(cep):
-    print(f"Consultando o CEP: {cep}")  # Log: indicando que estamos consultando o CEP
+    logging.info(f"Consultando o CEP: {cep}")  # Log: indicando que estamos consultando o CEP
     cep = cep.replace("-", "")  # Remover o traço do CEP
     
     # Tentar primeiro a API ViaCEP
@@ -68,7 +57,7 @@ def get_city_and_uf(cep):
         return cidade, rua, bairro, uf
 
     # Se todas as APIs falharem
-    logging.info(f"Erro ao consultar o CEP {cep} nas três APIs.")  # Log de erro
+    logging.error(f"Erro ao consultar o CEP {cep} nas três APIs.")  # Log de erro
     return None, None, None, None
 
 # Função para atualizar os campos no Bitrix24
@@ -99,7 +88,7 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
         logging.info(f"Registro {deal_id} atualizado com sucesso!")
     else:
         # Caso contrário, log de erro detalhado
-        logging.info(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
+        logging.error(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
 
 # Endpoint da API para atualizar cidade e UF a partir de um CEP
 @app.route('/atualizar_cidade_uf/<int:deal_id>/<string:cep>', methods=['POST'])
@@ -107,7 +96,7 @@ def atualizar_cidade_uf(deal_id, cep):
     try:
         # Verifica se ambos os parâmetros foram fornecidos
         if not deal_id or not cep:
-            logging.info(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
+            logging.error(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
         # Passo 1: Consultar a cidade e UF pelo CEP
@@ -118,11 +107,11 @@ def atualizar_cidade_uf(deal_id, cep):
             update_bitrix24_record(deal_id, cidade, uf, bairro, rua)
             return jsonify({"sucesso": f"Registro {deal_id} atualizado com sucesso!"}), 200
         else:
-            print("Erro ao obter cidade e UF para o CEP!")  # Log de erro
+            logging.error("Erro ao obter cidade e UF para o CEP!")  # Log de erro
             return jsonify({"erro": "Não foi possível obter dados para o CEP"}), 400
 
     except Exception as e:
-        print(f"Erro inesperado: {e}")  # Log de erro inesperado
+        logging.error(f"Erro inesperado: {e}")  # Log de erro inesperado
         return jsonify({"erro": f"Erro interno no servidor: {str(e)}"}), 500
 
 if __name__ == '__main__':
