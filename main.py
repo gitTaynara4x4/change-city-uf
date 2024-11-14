@@ -57,14 +57,14 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
         print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
 
 # Endpoint da API para atualizar cidade e UF a partir de um CEP
-@app.route('/atualizar_cidade_uf', methods=['POST'])
+@app.route('/atualizar_cidade_uf/<int:deal_id>/<string:cep>', methods=['POST'])
 def atualizar_cidade_uf():
     try:
+        deal_id = requests.args.get(deal_id)
+        cep = requests.args.get(cep)
         # Recupera os dados da requisição
         data = request.json
-        print(f"Dados recebidos: {data}")  # Log: mostrando os dados recebidos
-        deal_id = data.get("deal_id")
-        cep = data.get("cep")
+        print(f"Dados recebidos: {data}") 
 
         # Verifica se ambos os parâmetros foram fornecidos
         if not deal_id or not cep:
