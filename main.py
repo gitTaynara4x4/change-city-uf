@@ -33,7 +33,7 @@ def get_cep_from_bitrix24(record_id):
 
     if response.status_code == 200:
         data = response.json()
-        cep = data.get('result', {}).get('UF_CRM_1700661314351', '')
+        cep = data.get('result', {}).get('UF_CRM_1700661314351', '')  # ID do campo de CEP
         print(f"CEP retornado do Bitrix24: {cep}")  # Log: mostrando o CEP obtido
         return cep
     else:
@@ -51,12 +51,15 @@ def update_bitrix24_record(record_id, cidade, uf):
         }
     }
 
+    # Realizando a requisição POST para o Bitrix24
     response = requests.post(WEBHOOK_URL, json=payload)
     
+    print(f"Resposta da API Bitrix24: {response.status_code} - {response.text}")  # Log detalhado da resposta
+
     if response.status_code == 200:
         print(f"Registro {record_id} atualizado com sucesso!")  # Log de sucesso
     else:
-        print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code}")  # Log de erro
+        print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")  # Log de erro detalhado
 
 # Endpoint da API para atualizar cidade e UF a partir de um CEP
 @app.route('/atualizar_cidade_uf', methods=['POST'])
@@ -86,7 +89,7 @@ def atualizar_cidade_uf():
 
     except Exception as e:
         print(f"Erro inesperado: {e}")  # Log de erro inesperado
-        return jsonify({"erro": "Erro interno no servidor"}), 500
+        return jsonify({"erro": f"Erro interno no servidor: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7964)
