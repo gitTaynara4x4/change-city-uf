@@ -1,14 +1,20 @@
-# Passo 1: Escolha uma imagem base com Python
+# Passo 1: Escolher uma imagem base com Python
 FROM python:3.9-slim
 
-# Passo 2: Defina o diretório de trabalho no container
+# Passo 2: Definir o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Passo 3: Copie o código Python (script.py) para o container
-COPY . /app
+# Passo 3: Copiar o arquivo requirements.txt para o diretório de trabalho do container
+COPY requirements.txt /app/
 
-# Passo 4: Instale as dependências (requests)
-RUN pip install --no-cache-dir requests
+# Passo 4: Instalar as dependências do projeto
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Passo 5: Defina o comando para rodar o script Python
-CMD ["python", "script.py"]
+# Passo 5: Copiar o código (main.py) para o diretório de trabalho do container
+COPY main.py /app/
+
+# Passo 6: Expôr a porta 5000 (a porta onde o Flask vai rodar)
+EXPOSE 7964
+
+# Passo 7: Definir o comando para rodar o servidor Flask quando o container iniciar
+CMD ["python", "main.py"]
