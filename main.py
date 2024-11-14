@@ -62,7 +62,7 @@ def atualizar_cidade_uf():
         cep = data.get("cep")
 
         # Verifica se ambos os parâmetros foram fornecidos
-        if not record_id or not cep:
+        if not deal_id or not cep:
             print(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
