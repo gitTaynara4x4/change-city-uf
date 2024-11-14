@@ -20,7 +20,7 @@ def get_city_and_uf(cep):
         rua = data.get("logradouro", "")
         bairro = data.get("bairro", "")
         uf = data.get("uf", "")
-        print(f"Resposta da API ViaCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log
+        print(f"ViaCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para ViaCEP
         return cidade, rua, bairro, uf
     
     # Se o ViaCEP falhar, tenta o OpenCEP
@@ -33,7 +33,7 @@ def get_city_and_uf(cep):
         rua = data.get("logradouro", "")
         bairro = data.get("bairro", "")
         uf = data.get("uf", "")
-        print(f"Resposta da API OpenCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log
+        print(f"OpenCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para OpenCEP
         return cidade, rua, bairro, uf
 
     # Se o OpenCEP falhar, tenta a BrasilAPI
@@ -46,7 +46,7 @@ def get_city_and_uf(cep):
         rua = data.get("street", "")
         bairro = data.get("neighborhood", "")
         uf = data.get("state", "")
-        print(f"Resposta da API BrasilAPI - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log
+        print(f"BrasilAPI utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para BrasilAPI
         return cidade, rua, bairro, uf
 
     # Se todas as APIs falharem
