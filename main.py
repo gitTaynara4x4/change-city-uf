@@ -26,16 +26,20 @@ def get_city_and_uf(cep):
 # Função para atualizar os campos no Bitrix24
 def update_bitrix24_record(record_id, cidade, uf):
     print(f"Atualizando o Bitrix24 com Cidade: {cidade}, UF: {uf} para o registro {record_id}...")  # Log
+    # O endpoint correto para atualizar um "deal" no Bitrix24 é o "crm.deal.update"
+    url = f"{WEBHOOK_URL}crm.deal.update.json"
+
+    # Estrutura do payload para a atualização
     payload = {
-        'ID': record_id,
-        'fields': {
+        'ID': record_id,  # ID do registro do "deal" que queremos atualizar
+        'FIELDS': {
             'UF_CRM_1731588487': cidade,  # Campo Cidade
             'UF_CRM_1731589190': uf,      # Campo UF
         }
     }
 
     # Realizando a requisição POST para o Bitrix24
-    response = requests.post(WEBHOOK_URL, json=payload)
+    response = requests.post(url, json=payload)
     
     # Log detalhado da resposta da API Bitrix24
     print(f"Resposta da API Bitrix24: {response.status_code} - {response.text}")  # Log detalhado da resposta
