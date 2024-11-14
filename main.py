@@ -58,11 +58,8 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
 
 # Endpoint da API para atualizar cidade e UF a partir de um CEP
 @app.route('/atualizar_cidade_uf/<int:deal_id>/<string:cep>', methods=['POST'])
-def atualizar_cidade_uf():
+def atualizar_cidade_uf(deal_id, cep):
     try:
-        deal_id = request.args.get(deal_id)
-        cep = request.args.get(cep)
-
         # Verifica se ambos os parâmetros foram fornecidos
         if not deal_id or not cep:
             print(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
