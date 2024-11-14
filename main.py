@@ -38,7 +38,7 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
             'UF_CRM_1700661287551': bairro, # Campo Bairro
             'UF_CRM_1698688252221': rua, # Campo Rua
             'UF_CRM_1731588487': cidade,  # Campo Cidade
-            'UF_CRM_1731589190': uf   # Campo UF
+            'UF_CRM_1731589190': uf,   # Campo UF
         }
     }
 
