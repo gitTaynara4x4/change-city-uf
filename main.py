@@ -1,4 +1,7 @@
 import requests
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
 
 # Defina o URL do seu webhook no Bitrix24
 WEBHOOK_URL = "https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yjx5bg/"
@@ -56,25 +59,32 @@ def update_bitrix24_record(record_id, cidade, uf):
     else:
         print(f"Erro ao atualizar o registro: {response.status_code}")
 
-# Função principal para pegar o CEP e fazer a atualização
-def main():
-    # Aqui você pode capturar o ID do registro, por exemplo:
-    record_id = 12345  # O ID do registro que você deseja atualizar
-    
-    # Passo 1: Obter o CEP do Bitrix24
-    cep = get_cep_from_bitrix24(record_id)
-    
-    if cep:
-        # Passo 2: Consultar a cidade e UF pelo CEP
-        cidade, uf = get_city_and_uf(cep)
-        
-        if cidade and uf:
-            # Passo 3: Atualizar o registro no Bitrix24 com cidade e UF
-            update_bitrix24_record(record_id, cidade, uf)
-        else:
-            print(f"Não foi possível obter dados para o CEP: {cep}")
+# Endpoint da API para atualizar cidade e UF a partir de um CEP
+@app.route('/atualizar_cidade_uf', methods=['POST'])
+def atualizar_cidade_uf():
+    # Recupera o ID do registro e o CEP da requisição
+    data = request.json
+    record_id = data.get("record_id")
+    cep = data.get("cep")
+
+    if not record_id or not cep:
+        return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
+
+    # Passo 1: Obter o CEP do Bitrix24 (caso não fornecido)
+    if not cep:
+        cep = get_cep_from_bitrix24(record_id)
+        if not cep:
+            return jsonify({"erro": "Não foi possível obter o CEP"}), 400
+
+    # Passo 2: Consultar a cidade e UF pelo CEP
+    cidade, uf = get_city_and_uf(cep)
+
+    if cidade and uf:
+        # Passo 3: Atualizar o registro no Bitrix24 com cidade e UF
+        update_bitrix24_record(record_id, cidade, uf)
+        return jsonify({"sucesso": f"Registro {record_id} atualizado com sucesso!"}), 200
     else:
-        print("Não foi possível obter o CEP do registro.")
+        return jsonify({"erro": "Não foi possível obter dados para o CEP"}), 400
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7964)
