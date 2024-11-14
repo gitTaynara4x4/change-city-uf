@@ -28,7 +28,7 @@ def get_city_and_uf(cep):
         bairro = data.get("bairro", "")
         uf = data.get("uf", "")
         logging.info(f"ViaCEP utilizado - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log para ViaCEP
-        return cidade, rua, bairro, uf
+        return cidade, rua, bairro, uf,
     
     # Se o ViaCEP falhar, tenta o OpenCEP
     logging.info(f"ViaCEP falhou ou retornou erro. Tentando o OpenCEP...")  # Log de falha no ViaCEP
@@ -104,7 +104,7 @@ def atualizar_cidade_uf(deal_id, cep):
 
         if cidade and uf:
             # Passo 2: Atualizar o registro no Bitrix24 com cidade e UF
-            update_bitrix24_record(deal_id, cidade, uf, bairro, rua)
+            update_bitrix24_record(deal_id, cidade, rua, bairro, uf)
             return jsonify({"sucesso": f"Registro {deal_id} atualizado com sucesso!"}), 200
         else:
             logging.error("Erro ao obter cidade e UF para o CEP!")  # Log de erro
