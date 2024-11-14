@@ -25,13 +25,6 @@ def get_city_and_uf(cep):
         print(f"Erro ao consultar o CEP {cep}: {response.status_code}")  # Log de erro
         return None, None, None, None,
 
-def update_bitrix24_record(cidade, rua, bairro, uf):
-    # Colocando tudo em caixa alta
-    cidade = cidade.upper()
-    rua = rua.upper()
-    bairro = bairro.upper()
-    uf = uf.upper()
-
 # Função para atualizar os campos no Bitrix24
 def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
     print(f"Atualizando o Bitrix24 com Cidade: {cidade}, Rua: {rua}, Bairro: {bairro} UF: {uf} para o registro {deal_id}...")  # Log
@@ -42,10 +35,10 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
     payload = {
         'ID': deal_id,  # ID do registro do "deal" que queremos atualizar
         'FIELDS': {
-            'UF_CRM_1700661287551': bairro, # Campo Bairro
-            'UF_CRM_1698688252221': rua, # Campo Rua
-            'UF_CRM_1731588487': cidade,  # Campo Cidade
-            'UF_CRM_1731589190': uf,   # Campo UF
+            'UF_CRM_1700661287551': bairro.upper(), # Campo Bairro
+            'UF_CRM_1698688252221': rua.upper(), # Campo Rua
+            'UF_CRM_1731588487': cidade.upper(),  # Campo Cidade
+            'UF_CRM_1731589190': uf.upper(),   # Campo UF
         }
     }
     
