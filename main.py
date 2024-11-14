@@ -6,24 +6,40 @@ app = Flask(__name__)
 # Defina o URL do seu webhook no Bitrix24
 WEBHOOK_URL = "https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yjx5bg/"
 
-# Função para buscar a cidade e UF via API pública (ViaCEP)
+# Função para buscar a cidade e UF via API pública (ViaCEP ou OpenCEP)
 def get_city_and_uf(cep):
     print(f"Consultando o CEP: {cep}")  # Log: indicando que estamos consultando o CEP
     cep = cep.replace("-", "")  # Remover o traço do CEP
-    url = f"https://viacep.com.br/ws/{cep}/json/"
-    response = requests.get(url)
-
-    if response.status_code == 200:
+    
+    # Primeira tentativa: ViaCEP
+    url_viacep = f"https://viacep.com.br/ws/{cep}/json/"
+    response = requests.get(url_viacep)
+    
+    # Se o ViaCEP falhar ou não retornar dados válidos, tenta o OpenCEP
+    if response.status_code == 200 and "erro" not in response.json():
         data = response.json()
         cidade = data.get("localidade", "")
         rua = data.get("logradouro", "")
-        bairro = data.get("bairro","")
+        bairro = data.get("bairro", "")
         uf = data.get("uf", "")
-        print(f"Resposta da API ViaCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro} UF: {uf}")  # Log: mostrando a cidade e UF retornados
+        print(f"Resposta da API ViaCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log
         return cidade, rua, bairro, uf
     else:
-        print(f"Erro ao consultar o CEP {cep}: {response.status_code}")  # Log de erro
-        return None, None, None, None,
+        print(f"ViaCEP falhou ou retornou erro. Tentando o OpenCEP...")  # Log de falha no ViaCEP
+        # Segunda tentativa: OpenCEP
+        url_opencep = f"https://brasilapi.com.br/api/cep/v2/{cep}"
+        response_opencep = requests.get(url_opencep)
+        if response_opencep.status_code == 200:
+            data = response_opencep.json()
+            cidade = data.get("city", "")
+            rua = data.get("street", "")
+            bairro = data.get("neighborhood", "")
+            uf = data.get("state", "")
+            print(f"Resposta da API OpenCEP - Cidade: {cidade}, Rua: {rua}, Bairro: {bairro}, UF: {uf}")  # Log
+            return cidade, rua, bairro, uf
+        else:
+            print(f"Erro ao consultar o CEP {cep} nas duas APIs.")  # Log de erro
+            return None, None, None, None
 
 # Função para atualizar os campos no Bitrix24
 def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
@@ -41,7 +57,6 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
             'UF_CRM_1731589190': uf.upper(),   # Campo UF
         }
     }
-    
 
     # Realizando a requisição POST para o Bitrix24
     response = requests.post(url, json=payload)
@@ -65,12 +80,12 @@ def atualizar_cidade_uf(deal_id, cep):
             print(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
-        # Passo 1: Consultar a cidade e UF pelo CEP return cidade, uf, bairro, rua
-        cidade,  uf, bairro, rua = get_city_and_uf(cep)
+        # Passo 1: Consultar a cidade e UF pelo CEP
+        cidade, rua, bairro, uf = get_city_and_uf(cep)
 
         if cidade and uf:
             # Passo 2: Atualizar o registro no Bitrix24 com cidade e UF
-            update_bitrix24_record(deal_id, cidade,  uf, bairro, rua)
+            update_bitrix24_record(deal_id, cidade, uf, bairro, rua)
             return jsonify({"sucesso": f"Registro {deal_id} atualizado com sucesso!"}), 200
         else:
             print("Erro ao obter cidade e UF para o CEP!")  # Log de erro
