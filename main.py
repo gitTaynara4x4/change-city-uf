@@ -24,14 +24,14 @@ def get_city_and_uf(cep):
         return None, None
 
 # Função para atualizar os campos no Bitrix24
-def update_bitrix24_record(record_id, cidade, uf):
-    print(f"Atualizando o Bitrix24 com Cidade: {cidade}, UF: {uf} para o registro {record_id}...")  # Log
+def update_bitrix24_record(deal_id, cidade, uf):
+    print(f"Atualizando o Bitrix24 com Cidade: {cidade}, UF: {uf} para o registro {deal_id}...")  # Log
     # O endpoint correto para atualizar um "deal" no Bitrix24 é o "crm.deal.update"
     url = f"{WEBHOOK_URL}crm.deal.update.json"
 
     # Estrutura do payload para a atualização
     payload = {
-        'ID': record_id,  # ID do registro do "deal" que queremos atualizar
+        'ID': deal_id,  # ID do registro do "deal" que queremos atualizar
         'FIELDS': {
             'UF_CRM_1731588487': cidade,  # Campo Cidade
             'UF_CRM_1731589190': uf,      # Campo UF
@@ -46,7 +46,7 @@ def update_bitrix24_record(record_id, cidade, uf):
 
     if response.status_code == 200:
         # Confirmando a atualização
-        print(f"Registro {record_id} atualizado com sucesso!")
+        print(f"Registro {deal_id} atualizado com sucesso!")
     else:
         # Caso contrário, log de erro detalhado
         print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
@@ -58,12 +58,12 @@ def atualizar_cidade_uf():
         # Recupera os dados da requisição
         data = request.json
         print(f"Dados recebidos: {data}")  # Log: mostrando os dados recebidos
-        record_id = data.get("record_id")
+        deal_id = data.get("deal_id")
         cep = data.get("cep")
 
         # Verifica se ambos os parâmetros foram fornecidos
         if not record_id or not cep:
-            print(f"Parâmetros inválidos: record_id={record_id}, cep={cep}")  # Log de erro
+            print(f"Parâmetros inválidos: deal_id={deal_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
         # Passo 1: Consultar a cidade e UF pelo CEP
@@ -71,8 +71,8 @@ def atualizar_cidade_uf():
 
         if cidade and uf:
             # Passo 2: Atualizar o registro no Bitrix24 com cidade e UF
-            update_bitrix24_record(record_id, cidade, uf)
-            return jsonify({"sucesso": f"Registro {record_id} atualizado com sucesso!"}), 200
+            update_bitrix24_record(deal_id, cidade, uf)
+            return jsonify({"sucesso": f"Registro {deal_id} atualizado com sucesso!"}), 200
         else:
             print("Erro ao obter cidade e UF para o CEP!")  # Log de erro
             return jsonify({"erro": "Não foi possível obter dados para o CEP"}), 400
