@@ -8,44 +8,41 @@ WEBHOOK_URL = "https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yj
 
 # Função para buscar a cidade e UF via API pública (ViaCEP)
 def get_city_and_uf(cep):
-    print(f"Consultando CEP {cep}...")  # Log para depuração
-    cep = cep.replace("-", "")  # Remover traços do CEP
+    print(f"Consultando o CEP: {cep}")  # Log: indicando que estamos consultando o CEP
+    cep = cep.replace("-", "")  # Remover o traço do CEP
     url = f"https://viacep.com.br/ws/{cep}/json/"
     response = requests.get(url)
-    
+
     if response.status_code == 200:
         data = response.json()
         cidade = data.get("localidade", "")
         uf = data.get("uf", "")
-        print(f"Cidade: {cidade}, UF: {uf}")  # Log de dados da cidade/uf
+        print(f"Resposta da API ViaCEP - Cidade: {cidade}, UF: {uf}")  # Log: mostrando a cidade e UF retornados
         return cidade, uf
     else:
-        print(f"Erro ao consultar o CEP: {cep}")  # Log de erro
+        print(f"Erro ao consultar o CEP {cep}: {response.status_code}")  # Log de erro
         return None, None
 
 # Função para obter o CEP de um registro no Bitrix24
 def get_cep_from_bitrix24(record_id):
-    print(f"Consultando dados no Bitrix24 para o record_id: {record_id}...")  # Log para depuração
+    print(f"Consultando o registro {record_id} no Bitrix24...")  # Log: informando que estamos buscando o registro
     url = f"https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yjx5bg/crm.deal.get.json"
-    
-    params = {
-        "ID": record_id
-    }
+    params = {"ID": record_id}
 
     response = requests.get(url, params=params)
 
     if response.status_code == 200:
         data = response.json()
         cep = data.get('result', {}).get('UF_CRM_1700661314351', '')
-        print(f"CEP obtido do Bitrix24: {cep}")  # Log do CEP
+        print(f"CEP retornado do Bitrix24: {cep}")  # Log: mostrando o CEP obtido
         return cep
     else:
-        print(f"Erro ao buscar dados do registro no Bitrix24: {response.status_code}")  # Log de erro
+        print(f"Erro ao buscar dados no Bitrix24 para o registro {record_id}: {response.status_code}")  # Log de erro
         return None
 
 # Função para atualizar os campos no Bitrix24
 def update_bitrix24_record(record_id, cidade, uf):
-    print(f"Atualizando Bitrix24 para o ID {record_id}...")  # Log para depuração
+    print(f"Atualizando o Bitrix24 com Cidade: {cidade}, UF: {uf} para o registro {record_id}...")  # Log
     payload = {
         'ID': record_id,
         'fields': {
@@ -57,7 +54,7 @@ def update_bitrix24_record(record_id, cidade, uf):
     response = requests.post(WEBHOOK_URL, json=payload)
     
     if response.status_code == 200:
-        print(f"Registro atualizado com sucesso para o ID {record_id}")  # Log de sucesso
+        print(f"Registro {record_id} atualizado com sucesso!")  # Log de sucesso
     else:
         print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code}")  # Log de erro
 
@@ -65,14 +62,15 @@ def update_bitrix24_record(record_id, cidade, uf):
 @app.route('/atualizar_cidade_uf', methods=['POST'])
 def atualizar_cidade_uf():
     try:
-        # Recupera o ID do registro e o CEP da requisição POST
-        data = request.json  # Usando o corpo da requisição como JSON
+        # Recupera os dados da requisição
+        data = request.json
+        print(f"Dados recebidos: {data}")  # Log: mostrando os dados recebidos
         record_id = data.get("record_id")
         cep = data.get("cep")
 
         # Verifica se ambos os parâmetros foram fornecidos
         if not record_id or not cep:
-            print("Parâmetros obrigatórios não fornecidos!")  # Log de erro
+            print(f"Parâmetros inválidos: record_id={record_id}, cep={cep}")  # Log de erro
             return jsonify({"erro": "Parâmetros obrigatórios não fornecidos"}), 400
 
         # Passo 1: Consultar a cidade e UF pelo CEP
@@ -87,8 +85,7 @@ def atualizar_cidade_uf():
             return jsonify({"erro": "Não foi possível obter dados para o CEP"}), 400
 
     except Exception as e:
-        # Log do erro completo para ajudar a depurar
-        print(f"Erro inesperado: {e}")
+        print(f"Erro inesperado: {e}")  # Log de erro inesperado
         return jsonify({"erro": "Erro interno no servidor"}), 500
 
 if __name__ == '__main__':
