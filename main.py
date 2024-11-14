@@ -60,11 +60,8 @@ def update_bitrix24_record(deal_id, cidade, rua, bairro, uf):
 @app.route('/atualizar_cidade_uf/<int:deal_id>/<string:cep>', methods=['POST'])
 def atualizar_cidade_uf():
     try:
-        deal_id = requests.args.get(deal_id)
-        cep = requests.args.get(cep)
-        # Recupera os dados da requisição
-        data = request.json
-        print(f"Dados recebidos: {data}") 
+        deal_id = request.args.get(deal_id)
+        cep = request.args.get(cep)
 
         # Verifica se ambos os parâmetros foram fornecidos
         if not deal_id or not cep:
