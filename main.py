@@ -23,23 +23,6 @@ def get_city_and_uf(cep):
         print(f"Erro ao consultar o CEP {cep}: {response.status_code}")  # Log de erro
         return None, None
 
-# Função para obter o CEP de um registro no Bitrix24
-def get_cep_from_bitrix24(record_id):
-    print(f"Consultando o registro {record_id} no Bitrix24...")  # Log: informando que estamos buscando o registro
-    url = f"https://marketingsolucoes.bitrix24.com.br/rest/35002/7a2nuej815yjx5bg/crm.deal.get.json"
-    params = {"ID": record_id}
-
-    response = requests.get(url, params=params)
-
-    if response.status_code == 200:
-        data = response.json()
-        cep = data.get('result', {}).get('UF_CRM_1700661314351', '')  # ID do campo de CEP
-        print(f"CEP retornado do Bitrix24: {cep}")  # Log: mostrando o CEP obtido
-        return cep
-    else:
-        print(f"Erro ao buscar dados no Bitrix24 para o registro {record_id}: {response.status_code}")  # Log de erro
-        return None
-
 # Função para atualizar os campos no Bitrix24
 def update_bitrix24_record(record_id, cidade, uf):
     print(f"Atualizando o Bitrix24 com Cidade: {cidade}, UF: {uf} para o registro {record_id}...")  # Log
@@ -54,12 +37,15 @@ def update_bitrix24_record(record_id, cidade, uf):
     # Realizando a requisição POST para o Bitrix24
     response = requests.post(WEBHOOK_URL, json=payload)
     
+    # Log detalhado da resposta da API Bitrix24
     print(f"Resposta da API Bitrix24: {response.status_code} - {response.text}")  # Log detalhado da resposta
 
     if response.status_code == 200:
-        print(f"Registro {record_id} atualizado com sucesso!")  # Log de sucesso
+        # Confirmando a atualização
+        print(f"Registro {record_id} atualizado com sucesso!")
     else:
-        print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")  # Log de erro detalhado
+        # Caso contrário, log de erro detalhado
+        print(f"Erro ao atualizar o registro no Bitrix24: {response.status_code} - {response.text}")
 
 # Endpoint da API para atualizar cidade e UF a partir de um CEP
 @app.route('/atualizar_cidade_uf', methods=['POST'])
